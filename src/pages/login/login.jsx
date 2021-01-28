@@ -15,12 +15,11 @@ const layout = {
     span: 20, 
   },
   labelAlign: 'left',
-  colon: false
+  colon: false,
+  requiredMark: false
 }
 
 const Login = () => {
-
-  const [form] = Form.useForm()
 
   const onFinish = (value) => {
     console.log(value)
@@ -29,6 +28,37 @@ const Login = () => {
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo)
   }
+
+  const userNameRuleBlur = ({ getFieldValue }) => ({
+    validator(_, value) {
+      console.log(getFieldValue())
+      if (!value) {
+        return Promise.reject('请输入账号!')
+      }
+      if (value === 'admin') {
+        return Promise.resolve()
+      }
+      if (value.length !== 11) {
+        return Promise.reject('请输入正确的账号!')
+      }
+      return Promise.resolve();
+    },
+    validateTrigger: 'onBlur'
+  })
+
+  const passwordRule = ({ getFieldValue }) => ({
+    validator(_, value) {
+      console.log(getFieldValue())
+      if (!value) {
+        return Promise.reject('请输入密码!')
+      }
+      if (value.length < 6) {
+        return Promise.reject('密码需大于或等于6位!')
+      }
+      return Promise.resolve();
+    },
+    validateTrigger: 'onBlur'
+  })
 
   return (
     <div className="login">
@@ -42,7 +72,6 @@ const Login = () => {
           <Form
             {...layout}
             name="form"
-            initialValues={{ remember: true }}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
             className="login-form"
@@ -50,7 +79,8 @@ const Login = () => {
             <Form.Item
               label="账号"
               name="username"
-              rules={[{required: true,message: '请输入账号!' }]}
+              validateTrigger={['onBlur', 'onChange']}
+              rules={[userNameRuleBlur]}
               className="login-form-input"
             >
               <Input size="large"/>
@@ -59,7 +89,8 @@ const Login = () => {
             <Form.Item
               label="密码"
               name="password"
-              rules={[{required: true,message: '请输入密码!' }]}
+              validateTrigger={'onBlur'}
+              rules={[passwordRule]}
               className="login-form-input"
             >
               <Input size="large" type="password"/>
